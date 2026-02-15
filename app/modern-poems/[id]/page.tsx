@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Heart, MessageCircle, Share2, Bookmark, MoreVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { createBrowserSupabaseClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -30,7 +30,7 @@ export default function ModernPoemPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true)
   const [commentText, setCommentText] = useState('')
   const [comments, setComments] = useState<any[]>([])
-  const supabase = createBrowserSupabaseClient()
+  const supabase = createClient()
   const router = useRouter()
 
   useEffect(() => {

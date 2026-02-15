@@ -83,8 +83,9 @@ async function getRelatedPoets(eraId?: string, excludeId?: string) {
   return data || []
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const poet = await getPoet(params.slug)
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const poet = await getPoet(slug)
 
   return {
     title: `${poet.name} Poems | WordStack`,
@@ -96,8 +97,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default async function PoetPage({ params }: { params: { slug: string } }) {
-  const poet = await getPoet(params.slug)
+export default async function PoetPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const poet = await getPoet(slug)
   const { poems } = await getPoetPoemsAndRelated(poet.id)
   const themes = await getRelatedThemes(poet.id)
   const relatedPoets = await getRelatedPoets(poet.era_id, poet.id)

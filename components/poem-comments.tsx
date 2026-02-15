@@ -1,124 +1,122 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Heart, MessageCircle, Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { createClientSupabaseClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { formatDistanceToNow } from 'date-fns'
 
 export function PoemComments({ poemId }: { poemId: string }) {
   const [comments, setComments] = useState<any[]>([])
   const [newComment, setNewComment] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const supabase = createClientSupabaseClient()
+  const [loading, setLoading] = useState(true)
+  const supabase = createClient()
 
   useEffect(() => {
-    // Get current user
-    const getUser = async () => {
-      const { data } = await supabase.auth.getSession()
-      setUser(data.session?.user || null)
-    }
+    fetchComments()
+  }, [poemId])
 
-    // Fetch comments
-    const fetchComments = async () => {
+  async function fetchComments() {
+    try {
       const { data } = await supabase
         .from('poem_comments')
-        .select('*, users(username, display_name)')
+        .select('*, profiles(username, avatar_url)')
         .eq('poem_id', poemId)
         .order('created_at', { ascending: false })
 
       setComments(data || [])
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching comments:', error)
+      setLoading(false)
     }
+  }
 
-    getUser()
-    fetchComments()
-  }, [poemId])
-
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!user) {
-      window.location.href = '/auth/signup'
-      return
-    }
-
+  async function addComment() {
     if (!newComment.trim()) return
 
-    setIsLoading(true)
     try {
-      const { data } = await supabase
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      const { data, error } = await supabase
         .from('poem_comments')
-        .insert({
-          poem_id: poemId,
-          user_id: user.id,
-          content: newComment,
-        })
-        .select('*, users(username, display_name)')
-        .single()
+        .insert([
+          {
+            poem_id: poemId,
+            user_id: user?.id || null,
+            content: newComment,
+          },
+        ])
+        .select('*, profiles(username, avatar_url)')
+
+      if (error) throw error
 
       if (data) {
-        setComments([data, ...comments])
+        setComments([data[0], ...comments])
         setNewComment('')
       }
     } catch (error) {
       console.error('Error adding comment:', error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
   return (
-    <div className="mt-8 space-y-6">
-      {/* Add Comment Form */}
-      {user ? (
-        <Card className="p-6">
-          <form onSubmit={handleAddComment} className="space-y-4">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Share your thoughts on this poem..."
-              className="w-full rounded-md border border-border bg-background p-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              rows={3}
-            />
-            <Button type="submit" disabled={isLoading || !newComment.trim()}>
-              {isLoading ? 'Posting...' : 'Post Comment'}
-            </Button>
-          </form>
-        </Card>
-      ) : (
-        <Card className="p-6 text-center">
-          <p className="text-muted-foreground mb-4">Sign in to leave a comment</p>
-          <Button asChild>
-            <a href="/auth/signup">Sign In</a>
-          </Button>
-        </Card>
-      )}
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Comments</h2>
+
+      {/* Comment Form */}
+      <Card className="p-6">
+        <textarea
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Share your thoughts on this poem..."
+          className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+          rows={3}
+        />
+        <Button onClick={addComment} disabled={!newComment.trim()} className="mt-4">
+          Post Comment
+        </Button>
+      </Card>
 
       {/* Comments List */}
-      <div className="space-y-4">
-        {comments.length > 0 ? (
-          comments.map((comment) => (
+      {loading ? (
+        <p className="text-muted-foreground">Loading comments...</p>
+      ) : comments.length > 0 ? (
+        <div className="space-y-4">
+          {comments.map((comment) => (
             <Card key={comment.id} className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="font-semibold text-foreground">
-                    {comment.users?.display_name || comment.users?.username || 'Anonymous'}
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <p className="font-semibold">
+                    {comment.profiles?.username || 'Anonymous'}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(comment.created_at), {
+                      addSuffix: true,
+                    })}
                   </p>
                 </div>
               </div>
-              <p className="mt-4 leading-relaxed text-foreground">{comment.content}</p>
+              <p className="leading-relaxed">{comment.content}</p>
+              <div className="mt-4 flex gap-4 text-sm text-muted-foreground">
+                <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                  <Heart className="h-4 w-4" />
+                  <span>Like</span>
+                </button>
+                <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                  <Share2 className="h-4 w-4" />
+                  <span>Share</span>
+                </button>
+              </div>
             </Card>
-          ))
-        ) : (
-          <div className="rounded-lg border border-dashed border-border p-8 text-center">
-            <p className="text-muted-foreground">No comments yet. Be the first to share your thoughts!</p>
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-muted-foreground py-8">
+          No comments yet. Be the first to share your thoughts!
+        </p>
+      )}
     </div>
   )
 }

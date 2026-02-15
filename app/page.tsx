@@ -36,7 +36,7 @@ export default async function HomePage() {
             <p className="mt-6 text-lg text-muted-foreground">
               Explore over 1,000 classic poems from the world's greatest poets. Discover modern poetry from emerging voices. All searchable, tagged, and optimized for discovery.
             </p>
-            <div className="mt-8 flex gap-4">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Button asChild size="lg">
                 <Link href="/classics">
                   Browse Classics <ArrowRight className="ml-2 h-4 w-4" />

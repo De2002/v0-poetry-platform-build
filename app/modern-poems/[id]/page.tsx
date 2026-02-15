@@ -2,11 +2,10 @@
 
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { Heart, MessageCircle, Share2, Bookmark, MoreVertical } from 'lucide-react'
+import { Heart, MessageCircle, Share2, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 
 interface ModernPoem {
@@ -19,6 +18,13 @@ interface ModernPoem {
   comments_count: number
 }
 
+interface Comment {
+  id: string
+  content: string
+  user_id: string
+  created_at: string
+}
+
 export default function ModernPoemPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [poem, setPoem] = useState<ModernPoem | null>(null)
@@ -26,13 +32,14 @@ export default function ModernPoemPage({ params }: { params: Promise<{ id: strin
   const [likeCount, setLikeCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [commentText, setCommentText] = useState('')
-  const [comments, setComments] = useState<any[]>([])
+  const [comments, setComments] = useState<Comment[]>([])
   const supabase = createClient()
-  const router = useRouter()
 
   useEffect(() => {
-    fetchPoem()
-    fetchComments()
+    if (id) {
+      fetchPoem()
+      fetchComments()
+    }
   }, [id])
 
   async function fetchPoem() {
@@ -67,51 +74,44 @@ export default function ModernPoemPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  async function toggleLike() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      router.push('/auth/signup')
-      return
-    }
+  async function handleLike() {
+    setIsLiked(!isLiked)
+    setLikeCount(isLiked ? Math.max(0, likeCount - 1) : likeCount + 1)
+  }
 
-    if (isLiked) {
-      await supabase
-        .from('modern_poem_likes')
-        .delete()
-        .eq('poem_id', params.id)
-        .eq('user_id', user.id)
-
-      setIsLiked(false)
-      setLikeCount(Math.max(0, likeCount - 1))
+  async function handleShare() {
+    if (navigator.share && poem) {
+      try {
+        await navigator.share({
+          title: poem.title,
+          text: poem.content.substring(0, 100),
+          url: window.location.href,
+        })
+      } catch (error) {
+        console.error('Share failed:', error)
+      }
     } else {
-      await supabase.from('modern_poem_likes').insert({
-        poem_id: params.id,
-        user_id: user.id,
-      })
-
-      setIsLiked(true)
-      setLikeCount(likeCount + 1)
+      navigator.clipboard.writeText(window.location.href)
+      alert('Link copied to clipboard!')
     }
   }
 
-  async function postComment() {
+  async function handleComment() {
     if (!commentText.trim()) return
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      router.push('/auth/signup')
-      return
-    }
-
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('modern_poem_comments')
-        .insert({
-          poem_id: params.id,
-          user_id: user.id,
-          content: commentText,
-        })
-        .select('*, users(username, avatar_url)')
+        .insert([
+          {
+            poem_id: id,
+            user_id: 'anonymous',
+            content: commentText,
+          },
+        ])
+        .select()
+
+      if (error) throw error
 
       if (data) {
         setComments([data[0], ...comments])
@@ -122,147 +122,163 @@ export default function ModernPoemPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  async function sharePoem() {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: poem?.title,
-          text: poem?.content,
-          url: window.location.href,
-        })
-      } catch (error) {
-        console.error('Error sharing:', error)
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href)
-    }
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading poem...</p>
+      </div>
+    )
   }
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>
-  if (!poem) return <div className="flex items-center justify-center min-h-screen">Poem not found</div>
+  if (!poem) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Poem not found</h1>
+          <p className="mt-2 text-muted-foreground">The poem you're looking for doesn't exist.</p>
+          <Button asChild className="mt-6">
+            <Link href="/modern">Back to Feed</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const timeAgo = formatDistanceToNow(new Date(poem.created_at), { addSuffix: true })
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Header */}
-      <div className="border-b border-gray-800 p-4 flex items-center justify-between sticky top-0 bg-black/95 backdrop-blur">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          ←
-        </Button>
-        <span className="text-sm font-medium">Poem</span>
-        <Button variant="ghost" size="icon">
-          <MoreVertical className="w-5 h-5" />
-        </Button>
+    <div className="min-h-screen">
+      {/* Breadcrumb */}
+      <div className="border-b border-border">
+        <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Link href="/modern" className="hover:text-foreground">
+              Modern Feed
+            </Link>
+            <span>/</span>
+            <span>{poem.title}</span>
+          </div>
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto flex flex-col">
-        {/* Poem Section */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
-          {/* Title */}
-          <h1 className="text-5xl font-bold font-serif mb-8">{poem.title}</h1>
-
-          {/* Poem Content */}
-          <div className="text-2xl font-serif italic leading-relaxed mb-12 max-w-2xl">
-            "{poem.content}"
-          </div>
-
-          {/* Author Info */}
-          <div className="flex items-center gap-4 mb-12">
-            {poem.users?.avatar_url && (
-              <Image
-                src={poem.users.avatar_url}
-                alt={poem.users.username}
-                width={48}
-                height={48}
-                className="rounded-full"
-              />
-            )}
-            <div className="text-left">
-              <p className="font-semibold">{poem.users?.username}</p>
-              <p className="text-gray-400 text-sm">
-                {formatDistanceToNow(new Date(poem.created_at), { addSuffix: true })}
-              </p>
+      {/* Header Section */}
+      <section className="border-b border-border">
+        <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+          <h1 className="text-4xl font-bold">{poem.title}</h1>
+          <div className="mt-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Published {timeAgo}</p>
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-8 mb-12">
-            <button
-              onClick={toggleLike}
-              className={`flex flex-col items-center gap-2 ${isLiked ? 'text-red-500' : 'text-gray-400'}`}
-            >
-              <Heart className="w-6 h-6" fill={isLiked ? 'currentColor' : 'none'} />
-              <span className="text-xs">{likeCount}</span>
-            </button>
-            <button className="flex flex-col items-center gap-2 text-gray-400 hover:text-white">
-              <MessageCircle className="w-6 h-6" />
-              <span className="text-xs">{comments.length}</span>
-            </button>
-            <button
-              onClick={sharePoem}
-              className="flex flex-col items-center gap-2 text-gray-400 hover:text-white"
-            >
-              <Share2 className="w-6 h-6" />
-            </button>
-            <button className="flex flex-col items-center gap-2 text-gray-400 hover:text-white">
-              <Bookmark className="w-6 h-6" />
-            </button>
-          </div>
-
-          <div className="w-full max-w-2xl border-t border-gray-700"></div>
-        </div>
-
-        {/* Comments Section */}
-        <div className="px-6 py-8 border-t border-gray-700">
-          <h2 className="text-xl font-bold mb-6">Comments</h2>
-
-          {/* Comment Input */}
-          <div className="flex gap-4 mb-8">
-            <div className="w-10 h-10 rounded-full bg-gray-700 flex-shrink-0"></div>
-            <div className="flex-1">
-              <textarea
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Write a comment..."
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-white"
-                rows={3}
-              />
+            <div className="flex gap-2">
               <Button
-                onClick={postComment}
-                disabled={!commentText.trim()}
-                className="mt-3 w-full"
+                variant="outline"
+                size="sm"
+                onClick={handleLike}
               >
-                Post
+                <Heart className={`h-4 w-4 mr-1 ${isLiked ? 'fill-primary text-primary' : ''}`} />
+                {likeCount}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+              >
+                <Share2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Poem Text Section */}
+      <section className="border-b border-border py-16">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-lg border border-border bg-muted/30 p-8 md:p-12">
+            <div className="whitespace-pre-wrap font-serif text-lg leading-relaxed">
+              {poem.content}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Engagement Metrics */}
+      <section className="border-b border-border py-8">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-8">
+            <div className="flex items-center gap-2">
+              <Heart className={`h-5 w-5 ${isLiked ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+              <span className="text-sm font-medium">{likeCount} like{likeCount !== 1 ? 's' : ''}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm font-medium">{comments.length} comment{comments.length !== 1 ? 's' : ''}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comments Section */}
+      <section className="border-b border-border py-12">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold mb-8">Discussion</h2>
+
+          {/* Comment Input */}
+          <Card className="mb-8 p-6">
+            <div className="space-y-4">
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Share your thoughts on this poem..."
+                className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                rows={3}
+              />
+              <div className="flex justify-end">
+                <Button onClick={handleComment} disabled={!commentText.trim()}>
+                  Post Comment
+                </Button>
+              </div>
+            </div>
+          </Card>
 
           {/* Comments List */}
           <div className="space-y-4">
-            {comments.map((comment) => (
-              <div key={comment.id} className="flex gap-3">
-                {comment.users?.avatar_url && (
-                  <Image
-                    src={comment.users.avatar_url}
-                    alt={comment.users.username}
-                    width={40}
-                    height={40}
-                    className="rounded-full"
-                  />
-                )}
-                <div className="flex-1">
-                  <p className="font-semibold text-sm">{comment.users?.username}</p>
-                  <p className="text-gray-300">{comment.content}</p>
-                  <p className="text-gray-500 text-xs mt-1">
-                    {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                  </p>
-                </div>
-              </div>
-            ))}
+            {comments.length > 0 ? (
+              comments.map((comment) => (
+                <Card key={comment.id} className="p-6">
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="font-semibold">Anonymous</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                  <p className="leading-relaxed text-foreground">{comment.content}</p>
+                </Card>
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground py-8">
+                No comments yet. Be the first to share your thoughts!
+              </p>
+            )}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <Card className="p-8 text-center">
+            <h2 className="text-2xl font-bold">Share Your Poetry</h2>
+            <p className="mt-3 text-muted-foreground">
+              Have a poem you'd like to share with our community? Join WordStack and publish your work.
+            </p>
+            <Button asChild size="lg" className="mt-6">
+              <Link href="/modern/submit">
+                Submit a Poem <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </Card>
+        </div>
+      </section>
     </div>
   )
 }

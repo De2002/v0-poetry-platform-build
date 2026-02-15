@@ -66,9 +66,9 @@ export default function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#f5f1ed]">
+    <div className="min-h-screen bg-background">
       {/* Quote of the Day */}
-      <section className="border-b border-[#d4c5b0] py-16">
+      <section className="border-b border-border py-16">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <p className="text-sm font-medium tracking-widest text-muted-foreground">QUOTE OF THE DAY</p>
           <blockquote className="mt-8">
@@ -77,14 +77,14 @@ export default function HomePage() {
             </p>
             <p className="mt-6 font-serif text-lg text-foreground">— Emily Dickinson</p>
           </blockquote>
-          <Button asChild className="mt-8 bg-[#2c3e50] hover:bg-[#1a252f] text-white">
+          <Button asChild className="mt-8 bg-[#2c3e50] hover:bg-[#1a252f] text-white dark:bg-[#475569] dark:hover:bg-[#334155]">
             <Link href="/poems/hope-is-the-thing-with-feathers">Read Full Poem →</Link>
           </Button>
         </div>
       </section>
 
       {/* Creative Writing Prompts */}
-      <section className="border-b border-[#d4c5b0] py-16">
+      <section className="border-b border-border py-16">
         <div className="mx-auto max-w-6xl px-4">
           <h2 className="font-serif text-center text-3xl font-bold text-foreground">
             Creative Writing Prompts
@@ -110,7 +110,7 @@ export default function HomePage() {
                       <h3 className="font-serif text-xl font-bold">{prompt.title}</h3>
                       <p className="mt-2 text-sm leading-relaxed">{prompt.description}</p>
                     </div>
-                    <Button size="sm" className="w-fit bg-[#2c3e50] hover:bg-[#1a252f]">
+                    <Button size="sm" className="w-fit bg-[#2c3e50] hover:bg-[#1a252f] dark:bg-[#475569] dark:hover:bg-[#334155]">
                       Write From This
                     </Button>
                   </div>
@@ -125,7 +125,7 @@ export default function HomePage() {
       </section>
 
       {/* Latest Poems from Community */}
-      <section className="border-b border-[#d4c5b0] py-16">
+      <section className="border-b border-border py-16">
         <div className="mx-auto max-w-6xl px-4">
           <h2 className="font-serif text-center text-3xl font-bold text-foreground">
             Latest Poems from the Community
@@ -165,9 +165,9 @@ export default function HomePage() {
       </section>
 
       {/* Did You Know */}
-      <section className="border-b border-[#d4c5b0] py-16">
+      <section className="border-b border-border py-16">
         <div className="mx-auto max-w-4xl px-4">
-          <div className="flex flex-col md:flex-row gap-8 items-start md:items-center rounded-lg border-2 border-[#c9b5a0] bg-[#faf7f2] p-8 md:p-12">
+          <div className="flex flex-col md:flex-row gap-8 items-start md:items-center rounded-lg border-2 border-border bg-muted p-8 md:p-12">
             <div className="flex-shrink-0">
               <div className="relative h-32 w-32 md:h-40 md:w-40 overflow-hidden rounded-lg">
                 <Image

@@ -1,17 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card } from '@/components/ui/card'
+import { Heart, MessageCircle, Share2, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Heart, MessageCircle, Share2 } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 
 export default function ModernPage() {
-  const [activeTab, setActiveTab] = useState('feed')
   const [poems, setPoems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [expandedPoem, setExpandedPoem] = useState<string | null>(null)
+  const [likedPoems, setLikedPoems] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     const fetchPoems = async () => {
@@ -22,7 +21,6 @@ export default function ModernPage() {
         setPoems(data)
       } catch (error) {
         console.error('Error fetching poems:', error)
-        // Fallback to empty state
         setPoems([])
       } finally {
         setLoading(false)
@@ -32,127 +30,143 @@ export default function ModernPage() {
     fetchPoems()
   }, [])
 
+  const handleLike = (poemId: string) => {
+    const newLiked = new Set(likedPoems)
+    if (newLiked.has(poemId)) {
+      newLiked.delete(poemId)
+    } else {
+      newLiked.add(poemId)
+    }
+    setLikedPoems(newLiked)
+  }
+
+  const handleShare = async (poem: any) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: poem.title,
+          text: poem.content.substring(0, 100),
+          url: `${window.location.origin}/modern-poems/${poem.id}`,
+        })
+      } catch (error) {
+        console.error('Share failed:', error)
+      }
+    } else {
+      navigator.clipboard.writeText(`${window.location.origin}/modern-poems/${poem.id}`)
+    }
+  }
+
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <section className="border-b border-border">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background">
+      {/* Fixed Header */}
+      <div className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
+        <div className="mx-auto max-w-2xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold">Modern Poetry Feed</h1>
-              <p className="mt-4 text-muted-foreground">
-                Discover and share contemporary poetry with a passionate community of writers and readers.
-              </p>
+              <h1 className="text-2xl font-bold">Poetry Feed</h1>
             </div>
             <Button asChild>
-              <Link href="/modern/submit">Share Your Poem</Link>
+              <Link href="/modern/submit">Share Poem</Link>
             </Button>
           </div>
         </div>
-      </section>
-
-      {/* Tabs */}
-      <section className="border-b border-border">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="feed">Your Feed</TabsTrigger>
-              <TabsTrigger value="recent">Recent</TabsTrigger>
-              <TabsTrigger value="following">Following</TabsTrigger>
-            </TabsList>
-
-            {/* Your Feed Tab */}
-            <TabsContent value="feed" className="py-8">
-              <div className="space-y-6">
-                {loading ? (
-                  <p className="text-center text-muted-foreground">Loading poems...</p>
-                ) : poems.length > 0 ? (
-                  poems.map((poem) => (
-                    <PoemCard key={poem.id} poem={poem} />
-                  ))
-                ) : (
-                  <p className="text-center text-muted-foreground">No poems yet. Be the first to share!</p>
-                )}
-              </div>
-            </TabsContent>
-
-            {/* Recent Tab */}
-            <TabsContent value="recent" className="py-8">
-              <div className="space-y-6">
-                {loading ? (
-                  <p className="text-center text-muted-foreground">Loading poems...</p>
-                ) : poems.length > 0 ? (
-                  poems.map((poem) => (
-                    <PoemCard key={poem.id} poem={poem} />
-                  ))
-                ) : (
-                  <p className="text-center text-muted-foreground">No poems yet.</p>
-                )}
-              </div>
-            </TabsContent>
-
-            {/* Following Tab */}
-            <TabsContent value="following" className="py-8">
-              <div className="space-y-6">
-                <p className="text-center text-muted-foreground">
-                  Follow poets to see their latest work here.
-                </p>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </section>
-    </div>
-  )
-}
-
-function PoemCard({ poem }: { poem: any }) {
-  const [isLiked, setIsLiked] = useState(false)
-
-  const timeAgo = formatDistanceToNow(new Date(poem.created_at), { addSuffix: true })
-
-  return (
-    <Card className="p-6">
-      <Link href={`/modern-poems/${poem.id}`} className="block hover:opacity-80 transition-opacity">
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="text-2xl font-bold">{poem.title}</h3>
-            <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="font-semibold">by Anonymous</span>
-              <span>•</span>
-              <span>{timeAgo}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 whitespace-pre-wrap font-serif text-base leading-relaxed line-clamp-4">
-          {poem.content}
-          {poem.content.length > 200 && <span className="text-muted-foreground">...</span>}
-        </div>
-      </Link>
-
-      <Button asChild variant="link" className="mt-4 p-0">
-        <Link href={`/modern-poems/${poem.id}`}>
-          Read more →
-        </Link>
-      </Button>
-
-      <div className="mt-6 flex items-center gap-4 border-t border-border pt-4">
-        <button
-          onClick={() => setIsLiked(!isLiked)}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-        >
-          <Heart className={`h-5 w-5 ${isLiked ? 'fill-primary text-primary' : ''}`} />
-          {poem.likes_count || 0} like{(poem.likes_count || 0) !== 1 ? 's' : ''}
-        </button>
-        <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
-          <MessageCircle className="h-5 w-5" />
-          {poem.comments_count || 0} comment{(poem.comments_count || 0) !== 1 ? 's' : ''}
-        </button>
-        <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
-          <Share2 className="h-5 w-5" />
-        </button>
       </div>
-    </Card>
+
+      {/* Feed */}
+      <div className="mx-auto max-w-2xl">
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <p className="text-muted-foreground">Loading poems...</p>
+          </div>
+        ) : poems.length > 0 ? (
+          poems.map((poem, index) => {
+            const timeAgo = formatDistanceToNow(new Date(poem.created_at), { addSuffix: true })
+            const isExpanded = expandedPoem === poem.id
+            const isLiked = likedPoems.has(poem.id)
+
+            return (
+              <div
+                key={poem.id}
+                className="border-b border-border px-4 py-6 sm:px-6 lg:px-8 hover:bg-muted/50 transition-colors cursor-pointer"
+                onClick={() => setExpandedPoem(isExpanded ? null : poem.id)}
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h2 className="text-xl font-bold">{poem.title}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Posted {timeAgo}
+                    </p>
+                  </div>
+                  {!isExpanded && (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  )}
+                  {isExpanded && (
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+
+                {/* Poem Preview / Full */}
+                <div
+                  className={`whitespace-pre-wrap font-serif text-base leading-relaxed text-foreground mb-4 ${
+                    isExpanded ? '' : 'line-clamp-3'
+                  }`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {poem.content}
+                </div>
+
+                {/* Engagement Bar */}
+                <div
+                  className="flex items-center justify-between text-sm text-muted-foreground pt-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex gap-6">
+                    <button
+                      onClick={() => handleLike(poem.id)}
+                      className="flex items-center gap-2 hover:text-primary transition-colors group"
+                    >
+                      <Heart
+                        className={`h-4 w-4 ${
+                          isLiked ? 'fill-primary text-primary' : 'group-hover:text-primary'
+                        }`}
+                      />
+                      <span className={isLiked ? 'text-primary' : ''}>
+                        {(poem.likes_count || 0) + (isLiked ? 1 : 0)}
+                      </span>
+                    </button>
+                    <Link
+                      href={`/modern-poems/${poem.id}`}
+                      className="flex items-center gap-2 hover:text-primary transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      <span>{poem.comments_count || 0}</span>
+                    </Link>
+                    <button
+                      onClick={() => handleShare(poem)}
+                      className="flex items-center gap-2 hover:text-primary transition-colors"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <Link
+                    href={`/modern-poems/${poem.id}`}
+                    className="text-primary hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    View →
+                  </Link>
+                </div>
+              </div>
+            )
+          })
+        ) : (
+          <div className="flex items-center justify-center py-12">
+            <p className="text-muted-foreground">No poems yet. Be the first to share!</p>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

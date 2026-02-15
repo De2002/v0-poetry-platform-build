@@ -16,30 +16,14 @@ export default function ModernPage() {
   useEffect(() => {
     const fetchPoems = async () => {
       try {
-        // For now, using mock data - will integrate with API
-        const mockPoems = [
-          {
-            id: '1',
-            title: 'Oasis',
-            content: 'You are an oasis, and I am undone by thirst.\n\nThe sun has had me for days,\nmy skin tight with wanting,\nmy mouth remembering...',
-            author: 'noronic',
-            created_at: new Date(Date.now() - 86400000).toISOString(),
-            likes_count: 1,
-            comments_count: 0,
-          },
-          {
-            id: '2',
-            title: 'Poem 19',
-            content: 'I was a teen, a distraction\nI learned to believe I was unimportant\nMy happiness didn\'t matter\nMy voice couldn\'t reach you...',
-            author: 'poetjourney',
-            created_at: new Date(Date.now() - 172800000).toISOString(),
-            likes_count: 5,
-            comments_count: 2,
-          },
-        ]
-        setPoems(mockPoems)
+        const response = await fetch('/api/modern-poems')
+        if (!response.ok) throw new Error('Failed to fetch poems')
+        const data = await response.json()
+        setPoems(data)
       } catch (error) {
         console.error('Error fetching poems:', error)
+        // Fallback to empty state
+        setPoems([])
       } finally {
         setLoading(false)
       }

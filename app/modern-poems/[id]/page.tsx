@@ -1,6 +1,4 @@
-'use client'
-
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Heart, MessageCircle, Share2, Bookmark, MoreVertical } from 'lucide-react'
@@ -17,13 +15,10 @@ interface ModernPoem {
   created_at: string
   likes_count: number
   comments_count: number
-  users?: {
-    username: string
-    avatar_url?: string
-  }
 }
 
-export default function ModernPoemPage({ params }: { params: { id: string } }) {
+export default function ModernPoemPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const [poem, setPoem] = useState<ModernPoem | null>(null)
   const [isLiked, setIsLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
@@ -36,14 +31,14 @@ export default function ModernPoemPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     fetchPoem()
     fetchComments()
-  }, [params.id])
+  }, [id])
 
   async function fetchPoem() {
     try {
       const { data, error } = await supabase
         .from('modern_poems')
-        .select('*, users(username, avatar_url)')
-        .eq('id', params.id)
+        .select('*')
+        .eq('id', id)
         .single()
 
       if (error) throw error
@@ -60,8 +55,8 @@ export default function ModernPoemPage({ params }: { params: { id: string } }) {
     try {
       const { data } = await supabase
         .from('modern_poem_comments')
-        .select('*, users(username, avatar_url)')
-        .eq('poem_id', params.id)
+        .select('*')
+        .eq('poem_id', id)
         .order('created_at', { ascending: false })
 
       setComments(data || [])

@@ -118,7 +118,7 @@ function PoemCard({ poem }: { poem: any }) {
           <div>
             <h3 className="text-2xl font-bold">{poem.title}</h3>
             <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="font-semibold">by {poem.author}</span>
+              <span className="font-semibold">by Anonymous</span>
               <span>•</span>
               <span>{timeAgo}</span>
             </div>
@@ -143,11 +143,11 @@ function PoemCard({ poem }: { poem: any }) {
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
         >
           <Heart className={`h-5 w-5 ${isLiked ? 'fill-primary text-primary' : ''}`} />
-          {poem.likes_count} like{poem.likes_count !== 1 ? 's' : ''}
+          {poem.likes_count || 0} like{(poem.likes_count || 0) !== 1 ? 's' : ''}
         </button>
         <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
           <MessageCircle className="h-5 w-5" />
-          {poem.comments_count} comment{poem.comments_count !== 1 ? 's' : ''}
+          {poem.comments_count || 0} comment{(poem.comments_count || 0) !== 1 ? 's' : ''}
         </button>
         <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
           <Share2 className="h-5 w-5" />

@@ -50,48 +50,41 @@ export default async function HomePage() {
 
           {/* Classic Poets Showcase */}
           <div className="grid gap-6 md:grid-cols-3">
-            {[
-              {
-                name: 'Emily Dickinson',
-                years: '1830–1886',
-                bio: 'A master of introspection and innovation, Dickinson revolutionized poetry with her unique form and profound observations of the human soul.',
-                image: '/images/emily-dickinson.jpg',
-              },
-              {
-                name: 'Edgar Allan Poe',
-                years: '1809–1849',
-                bio: 'Pioneer of the modern detective story and master of gothic atmosphere, Poe created some of literature\'s most haunting and memorable verses.',
-                image: '/images/edgar-allan-poe.jpg',
-              },
-              {
-                name: 'William Wordsworth',
-                years: '1770–1850',
-                bio: 'Co-founder of Romanticism, Wordsworth believed poetry should use the language of ordinary people to express profound truths about nature and emotion.',
-                image: '/images/william-wordsworth.jpg',
-              },
-            ].map((poet) => (
-              <Card key={poet.name} className="overflow-hidden flex flex-col">
-                <div className="relative h-48 w-full overflow-hidden bg-muted">
-                  <Image
-                    src={poet.image}
-                    alt={poet.name}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                </div>
-                <div className="flex flex-col flex-1 p-6">
-                  <h3 className="font-bold text-lg">{poet.name}</h3>
-                  <p className="text-sm text-muted-foreground">{poet.years}</p>
-                  <p className="mt-3 text-sm leading-relaxed flex-1">{poet.bio}</p>
-                  <Button asChild variant="link" className="mt-4 w-fit">
-                    <Link href={`/poets/${poet.name.toLowerCase().replace(/\s+/g, '-')}`}>
-                      View Poems <ArrowRight className="ml-1 h-3 w-3" />
-                    </Link>
-                  </Button>
-                </div>
-              </Card>
-            ))}
+            {poets.length > 0 ? (
+              poets.map((poet) => (
+                <Card key={poet.id} className="overflow-hidden flex flex-col">
+                  <div className="relative h-48 w-full overflow-hidden bg-muted">
+                    {poet.image_url && (
+                      <Image
+                        src={poet.image_url}
+                        alt={poet.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    )}
+                  </div>
+                  <div className="flex flex-col flex-1 p-6">
+                    <h3 className="font-bold text-lg">{poet.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {poet.birth_year && poet.death_year
+                        ? `${poet.birth_year}–${poet.death_year}`
+                        : 'Classical Era'}
+                    </p>
+                    <p className="mt-3 text-sm leading-relaxed flex-1 line-clamp-3">{poet.bio}</p>
+                    <Button asChild variant="link" className="mt-4 w-fit">
+                      <Link href={`/poets/${poet.slug}`}>
+                        View Poems <ArrowRight className="ml-1 h-3 w-3" />
+                      </Link>
+                    </Button>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">No poets found yet.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -19,7 +19,6 @@ async function getClassicPoems() {
     .from('poems')
     .select('*, poets(name, slug)')
     .eq('is_published', true)
-    .eq('is_classic', true)
     .order('created_at', { ascending: false })
 
   return data || []

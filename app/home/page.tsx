@@ -66,6 +66,7 @@ export default function HomePage() {
                     src={prompt.image}
                     alt={prompt.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover opacity-70 group-hover:opacity-80 transition-opacity"
                   />
                   <div className="absolute inset-0 bg-black/40" />
@@ -131,6 +132,7 @@ export default function HomePage() {
                     src={poem.image}
                     alt={poem.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover"
                   />
                   <div className="absolute inset-0 bg-black/30 flex flex-col justify-end p-4">
@@ -167,7 +169,8 @@ export default function HomePage() {
                 <Image
                   src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop"
                   alt="Edgar Allan Poe"
-                  fill
+                  width={160}
+                  height={160}
                   className="object-cover"
                 />
               </div>
@@ -176,7 +179,7 @@ export default function HomePage() {
             <div className="flex-1">
               <h3 className="font-serif text-2xl font-bold text-foreground">Did You Know?</h3>
               <p className="mt-4 font-serif text-lg italic leading-relaxed text-foreground">
-                Edgar Allan Poe was afraid of being buried alive and often wrote about premature burrill in his stories.
+                Edgar Allan Poe was afraid of being buried alive and often wrote about premature burial in his stories.
               </p>
             </div>
           </div>
@@ -217,6 +220,7 @@ export default function HomePage() {
                     src={article.image}
                     alt={article.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover"
                   />
                 </div>

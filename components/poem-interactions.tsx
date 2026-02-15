@@ -1,27 +1,135 @@
-## Error Type
-Build Error
+'use client'
 
-## Error Message
-Export createClientSupabaseClient doesn't exist in target module
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Heart, Share2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
-## Build Output
-./components/poem-interactions.tsx:6:1
-Export createClientSupabaseClient doesn't exist in target module
-  4 | import { Button } from '@/components/ui/button'
-  5 | import { Heart, Share2 } from 'lucide-react'
-> 6 | import { createClient } from '@/lib/supabase/client'
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  7 |
-  8 | export function PoemInteractions({
-  9 |   poemId,
+export function PoemInteractions({
+  poemId,
+  initialLikes = 0,
+  initialBookmarks = 0,
+}: {
+  poemId: string
+  initialLikes?: number
+  initialBookmarks?: number
+}) {
+  const [likes, setLikes] = useState(initialLikes)
+  const [bookmarks, setBookmarks] = useState(initialBookmarks)
+  const [isLiked, setIsLiked] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const supabase = createClient()
 
-The export createClientSupabaseClient was not found in module [project]/lib/supabase/client.ts [app-client] (ecmascript).
-Did you mean to import createClient?
-All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+  const handleLike = async () => {
+    setIsLoading(true)
+    try {
+      if (isLiked) {
+        // Unlike
+        const { error } = await supabase
+          .from('poem_likes')
+          .delete()
+          .eq('poem_id', poemId)
 
-Import trace:
-  Server Component:
-    ./components/poem-interactions.tsx
-    ./app/poems/[slug]/page.tsx
+        if (!error) {
+          setIsLiked(false)
+          setLikes(Math.max(0, likes - 1))
+        }
+      } else {
+        // Like
+        const { error } = await supabase
+          .from('poem_likes')
+          .insert({ poem_id: poemId })
 
-Next.js version: 16.1.6 (Turbopack)
+        if (!error) {
+          setIsLiked(true)
+          setLikes(likes + 1)
+        }
+      }
+    } catch (error) {
+      console.error('Error updating like:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleBookmark = async () => {
+    setIsLoading(true)
+    try {
+      if (isBookmarked) {
+        // Remove bookmark
+        const { error } = await supabase
+          .from('poem_bookmarks')
+          .delete()
+          .eq('poem_id', poemId)
+
+        if (!error) {
+          setIsBookmarked(false)
+          setBookmarks(Math.max(0, bookmarks - 1))
+        }
+      } else {
+        // Add bookmark
+        const { error } = await supabase
+          .from('poem_bookmarks')
+          .insert({ poem_id: poemId })
+
+        if (!error) {
+          setIsBookmarked(true)
+          setBookmarks(bookmarks + 1)
+        }
+      }
+    } catch (error) {
+      console.error('Error updating bookmark:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Check out this poem',
+          url: window.location.href,
+        })
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(window.location.href)
+      }
+    } catch (error) {
+      console.error('Error sharing:', error)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleLike}
+        disabled={isLoading}
+        className="gap-2"
+      >
+        <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+        <span>{likes}</span>
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleBookmark}
+        disabled={isLoading}
+      >
+        {isBookmarked ? '📌' : '📍'}
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleShare}
+      >
+        <Share2 className="h-4 w-4" />
+      </Button>
+    </div>
+  )
+}

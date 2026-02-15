@@ -29,38 +29,69 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section className="border-b border-border">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="grid gap-12 md:grid-cols-2 md:gap-8 lg:gap-12">
-            <div className="flex flex-col justify-center">
-              <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-                The World's Most Structured Poetry Archive
-              </h1>
-              <p className="mt-6 text-lg text-muted-foreground">
-                Explore over 1,000 classic poems from the world's greatest poets. Discover modern poetry from emerging voices. All searchable, tagged, and optimized for discovery.
-              </p>
-              <div className="mt-8 flex gap-4">
-                <Button asChild size="lg">
-                  <Link href="/classics">
-                    Browse Classics <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="lg">
-                  <Link href="/modern">Discover Modern Poetry</Link>
-                </Button>
-              </div>
-            </div>
-
-            {/* Featured Quote */}
-            <div className="flex flex-col justify-center rounded-lg border border-border bg-muted/50 p-8">
-              <blockquote className="text-2xl font-semibold italic leading-tight">
-                "Hope is the thing with feathers that perches in the soul."
-              </blockquote>
-              <p className="mt-4 text-muted-foreground">— Emily Dickinson</p>
-              <Button asChild variant="link" className="mt-4 w-fit">
-                <Link href="/poems/hope-is-the-thing-with-feathers">
-                  Read Full Poem <ArrowRight className="ml-2 h-4 w-4" />
+          <div className="mb-12">
+            <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              The World's Most Structured Poetry Archive
+            </h1>
+            <p className="mt-6 text-lg text-muted-foreground">
+              Explore over 1,000 classic poems from the world's greatest poets. Discover modern poetry from emerging voices. All searchable, tagged, and optimized for discovery.
+            </p>
+            <div className="mt-8 flex gap-4">
+              <Button asChild size="lg">
+                <Link href="/classics">
+                  Browse Classics <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/modern">Discover Modern Poetry</Link>
+              </Button>
             </div>
+          </div>
+
+          {/* Classic Poets Showcase */}
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                name: 'Emily Dickinson',
+                years: '1830–1886',
+                bio: 'A master of introspection and innovation, Dickinson revolutionized poetry with her unique form and profound observations of the human soul.',
+                image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop',
+              },
+              {
+                name: 'Edgar Allan Poe',
+                years: '1809–1849',
+                bio: 'Pioneer of the modern detective story and master of gothic atmosphere, Poe created some of literature\'s most haunting and memorable verses.',
+                image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=400&fit=crop',
+              },
+              {
+                name: 'William Wordsworth',
+                years: '1770–1850',
+                bio: 'Co-founder of Romanticism, Wordsworth believed poetry should use the language of ordinary people to express profound truths about nature and emotion.',
+                image: 'https://images.unsplash.com/photo-1507842872343-583f20270319?w=300&h=400&fit=crop',
+              },
+            ].map((poet) => (
+              <Card key={poet.name} className="overflow-hidden flex flex-col">
+                <div className="relative h-48 w-full overflow-hidden bg-muted">
+                  <Image
+                    src={poet.image}
+                    alt={poet.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
+                </div>
+                <div className="flex flex-col flex-1 p-6">
+                  <h3 className="font-bold text-lg">{poet.name}</h3>
+                  <p className="text-sm text-muted-foreground">{poet.years}</p>
+                  <p className="mt-3 text-sm leading-relaxed flex-1">{poet.bio}</p>
+                  <Button asChild variant="link" className="mt-4 w-fit">
+                    <Link href={`/poets/${poet.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                      View Poems <ArrowRight className="ml-1 h-3 w-3" />
+                    </Link>
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       </section>

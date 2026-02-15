@@ -1,5 +1,3 @@
-'use client'
-
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -60,32 +58,33 @@ export default function HomePage() {
                 author: 'Lisa K.',
               },
             ].map((prompt) => (
-              <div key={prompt.title} className="group relative overflow-hidden rounded-lg">
-                <div className="relative h-40 md:h-48 w-full overflow-hidden bg-black">
-                  <Image
-                    src={prompt.image}
-                    alt={prompt.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover opacity-70 group-hover:opacity-80 transition-opacity"
-                  />
-                  <div className="absolute inset-0 bg-black/40" />
-                </div>
-
-                <div className="absolute inset-0 flex flex-col justify-between p-6 text-white">
-                  <div>
-                    <h3 className="font-serif text-xl font-bold">{prompt.title}</h3>
-                    <p className="mt-2 text-sm">{prompt.description}</p>
+              <div key={prompt.title}>
+                <div className="group relative overflow-hidden rounded-lg">
+                  <div className="relative h-48 w-full overflow-hidden bg-black">
+                    <Image
+                      src={prompt.image}
+                      alt={prompt.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover opacity-70 group-hover:opacity-80 transition-opacity"
+                    />
+                    <div className="absolute inset-0 bg-black/40" />
                   </div>
 
-                  <Button
-                    size="sm"
-                    className="w-fit bg-[#2c3e50] hover:bg-[#1a252f]"
-                  >
-                    Write From This
-                  </Button>
-                </div>
+                  <div className="absolute inset-0 flex flex-col justify-between p-6 text-white">
+                    <div>
+                      <h3 className="font-serif text-xl font-bold">{prompt.title}</h3>
+                      <p className="mt-2 text-sm">{prompt.description}</p>
+                    </div>
 
+                    <Button
+                      size="sm"
+                      className="w-fit bg-[#2c3e50] hover:bg-[#1a252f]"
+                    >
+                      Write From This
+                    </Button>
+                  </div>
+                </div>
                 <p className="mt-3 text-center text-sm text-muted-foreground">
                   Prompt by {prompt.author}
                 </p>

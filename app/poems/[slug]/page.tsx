@@ -3,7 +3,9 @@ import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Share2, Heart } from 'lucide-react'
+import { Heart, MessageCircle, Share2 } from 'lucide-react'
+import { PoemInteractions } from '@/components/poem-interactions'
+import { PoemComments } from '@/components/poem-comments'
 
 async function getPoem(slug: string) {
   const supabase = await createServerSupabaseClient()
@@ -39,8 +41,23 @@ async function getRelatedContent(poemId: string) {
   }
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const poem = await getPoem(params.slug)
+async function getPoemStats(poemId: string) {
+  const supabase = await createServerSupabaseClient()
+
+  const [likesRes, commentsRes] = await Promise.all([
+    supabase.from('poem_likes').select('id', { count: 'exact', head: true }).eq('poem_id', poemId),
+    supabase.from('poem_comments').select('id', { count: 'exact', head: true }).eq('poem_id', poemId),
+  ])
+
+  return {
+    likes: likesRes.count || 0,
+    comments: commentsRes.count || 0,
+  }
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const poem = await getPoem(slug)
 
   return {
     title: `${poem.title} - ${poem.poets?.name} | WordStack`,
@@ -52,9 +69,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default async function PoemPage({ params }: { params: { slug: string } }) {
-  const poem = await getPoem(params.slug)
+export default async function PoemPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const poem = await getPoem(slug)
   const { themes } = await getRelatedContent(poem.id)
+  const { likes, comments } = await getPoemStats(poem.id)
 
   // Create structured data (JSON-LD) for SEO
   const structuredData = {
@@ -110,14 +129,8 @@ export default async function PoemPage({ params }: { params: { slug: string } })
                 {poem.poets?.name}
               </Link>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="icon">
-                <Heart className="h-5 w-5" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <Share2 className="h-5 w-5" />
-              </Button>
-            </div>
+            {/* Interactions */}
+            <PoemInteractions poemId={poem.id} poemTitle={poem.title} initialLikes={likes} />
           </div>
         </div>
       </section>
@@ -236,6 +249,14 @@ export default async function PoemPage({ params }: { params: { slug: string } })
               </p>
             </Card>
           </div>
+        </div>
+      </section>
+
+      {/* Comments Section */}
+      <section className="border-b border-border py-16">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold">Comments ({comments})</h2>
+          <PoemComments poemId={poem.id} />
         </div>
       </section>
 

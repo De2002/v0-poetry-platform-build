@@ -24,10 +24,20 @@ export default function SignUp() {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       })
 
       if (signUpError) {
-        setError(signUpError.message)
+        // Handle rate limiting
+        if (signUpError.message.toLowerCase().includes('rate')) {
+          setError('Too many signup attempts. Please try again in a few minutes.')
+        } else if (signUpError.message.toLowerCase().includes('already')) {
+          setError('This email is already registered. Try signing in instead.')
+        } else {
+          setError(signUpError.message)
+        }
         return
       }
 

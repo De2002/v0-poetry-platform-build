@@ -9,7 +9,6 @@ export default function VerifyEmail() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get email from session storage if available
     const storedEmail = sessionStorage.getItem('signup_email')
     if (storedEmail) {
       setEmail(storedEmail)
@@ -27,24 +26,24 @@ export default function VerifyEmail() {
           <h1 className="text-3xl font-bold">Check your email</h1>
           <p className="mt-4 text-muted-foreground">
             {email
-              ? `We've sent a confirmation link to ${email}`
-              : "We've sent a confirmation link to your email address"}
+              ? `We sent a confirmation link to ${email}`
+              : "We sent a confirmation link to your email"}
           </p>
         </div>
 
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Click the link to verify your account.
+            Click the link in the email to verify your account.
           </p>
           <p className="text-xs text-muted-foreground">
-            {"Didn't receive the email? Check your spam folder."}
+            Did not receive the email? Check your spam folder.
           </p>
           <p className="text-xs text-muted-foreground">
-            For testing: You can proceed directly to{' '}
+            For testing: proceed to{' '}
             <Link href="/auth/signin" className="text-primary hover:underline">
               sign in
             </Link>
-            {' '}after confirming via the email link.
+            {' '}after confirming your email.
           </p>
         </div>
 

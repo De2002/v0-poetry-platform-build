@@ -24,18 +24,19 @@ export default function SignUp() {
     setError(null)
 
     try {
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+      const response = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       })
 
-      if (otpError) {
-        if (otpError.message.toLowerCase().includes('rate')) {
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (data.error?.includes('rate')) {
           setError('Too many requests. Please try again in a few minutes.')
         } else {
-          setError(otpError.message)
+          setError(data.error || 'Failed to send code')
         }
         return
       }
@@ -54,14 +55,27 @@ export default function SignUp() {
     setError(null)
 
     try {
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: 'email',
+      const response = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code: otp }),
       })
 
-      if (verifyError) {
-        setError(verifyError.message)
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to verify code')
+        return
+      }
+
+      // Sign in with Supabase using the email
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: data.sessionToken,
+      })
+
+      if (signInError) {
+        setError('Failed to create session')
         return
       }
 

@@ -1,12 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default function VerifyEmail() {
-  const router = useRouter()
   const [email, setEmail] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
@@ -36,13 +34,17 @@ export default function VerifyEmail() {
 
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            We've sent a confirmation link to your email. Click the link to verify your account.
+            Click the link to verify your account.
           </p>
           <p className="text-xs text-muted-foreground">
-            Didn't receive the email? Check your spam folder.
+            {"Didn't receive the email? Check your spam folder."}
           </p>
           <p className="text-xs text-muted-foreground">
-            For testing: You can proceed directly to <Link href="/auth/signin" className="text-primary hover:underline">sign in</Link> after confirming via the email link.
+            For testing: You can proceed directly to{' '}
+            <Link href="/auth/signin" className="text-primary hover:underline">
+              sign in
+            </Link>
+            {' '}after confirming via the email link.
           </p>
         </div>
 

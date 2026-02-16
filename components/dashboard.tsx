@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { BookOpen, MessageSquare, Heart, Settings, LogOut, Plus } from 'lucide-react'
+import { BookOpen, MessageSquare, Heart, Settings, LogOut, Plus, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -30,7 +30,7 @@ const QUOTES_OF_THE_DAY = [
   },
 ]
 
-export function Dashboard({ user }: { user: any }) {
+export function Dashboard({ user, isAdmin = false }: { user: any; isAdmin?: boolean }) {
   const router = useRouter()
   const supabase = createClient()
   const today = new Date().getDate()
@@ -51,10 +51,20 @@ export function Dashboard({ user }: { user: any }) {
               <h1 className="text-2xl font-bold">Welcome back, {user?.email?.split('@')[0]}</h1>
               <p className="text-sm text-muted-foreground">Your poetry workspace</p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
+            <div className="flex items-center gap-3">
+              {isAdmin && (
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/admin">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Manage Platform
+                  </Link>
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </header>

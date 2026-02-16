@@ -11,12 +11,23 @@ async function getUser() {
   return data.user
 }
 
+async function getUserProfile(userId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', userId)
+    .single()
+  return data
+}
+
 export default async function HomePage() {
   const user = await getUser()
 
   // If user is authenticated, show dashboard
   if (user) {
-    return <Dashboard user={user} />
+    const profile = await getUserProfile(user.id)
+    return <Dashboard user={user} isAdmin={profile?.is_admin || false} />
   }
 
   // Otherwise show landing page

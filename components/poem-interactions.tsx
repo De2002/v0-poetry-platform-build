@@ -1,54 +1,49 @@
 'use client'
 
-import { Heart, MessageCircle, Share2 } from 'lucide-react'
 import { useState } from 'react'
+import { Heart, Share2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 export function PoemInteractions({ poemId }: { poemId: string }) {
   const [isLiked, setIsLiked] = useState(false)
-  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [likeCount, setLikeCount] = useState(0)
+  const supabase = createClient()
 
-  const handleLike = () => {
+  const handleLike = async () => {
     setIsLiked(!isLiked)
-  }
-
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked)
+    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1)
   }
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Check out this poem',
-          url: `${window.location.origin}/poems/${poemId}`,
+          title: 'Poem',
+          text: 'Check out this poem on WordStack',
+          url: window.location.href,
         })
       } catch (error) {
         console.error('Share failed:', error)
       }
     } else {
-      navigator.clipboard.writeText(`${window.location.origin}/poems/${poemId}`)
+      navigator.clipboard.writeText(window.location.href)
     }
   }
 
   return (
-    <div className="flex gap-4 pt-4 border-t border-border">
+    <div className="flex items-center gap-6 py-4 border-t border-border">
       <button
         onClick={handleLike}
-        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+        className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
       >
         <Heart className={`h-5 w-5 ${isLiked ? 'fill-primary text-primary' : ''}`} />
-        <span>Like</span>
-      </button>
-      <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
-        <MessageCircle className="h-5 w-5" />
-        <span>Comment</span>
+        <span>{likeCount}</span>
       </button>
       <button
         onClick={handleShare}
-        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+        className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
       >
         <Share2 className="h-5 w-5" />
-        <span>Share</span>
       </button>
     </div>
   )

@@ -24,13 +24,10 @@ async function getUserProfile(userId: string) {
 export default async function HomePage() {
   const user = await getUser()
 
-  // If user is authenticated, check if admin
+  // If user is authenticated, show dashboard
   if (user) {
     const profile = await getUserProfile(user.id)
-    if (profile?.is_admin) {
-      redirect('/admin')
-    }
-    return <Dashboard user={user} />
+    return <Dashboard user={user} isAdmin={profile?.is_admin || false} />
   }
 
   // Otherwise show landing page

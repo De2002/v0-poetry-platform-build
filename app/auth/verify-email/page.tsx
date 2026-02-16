@@ -30,7 +30,7 @@ export default function VerifyEmail() {
           <p className="mt-4 text-muted-foreground">
             {email
               ? `We've sent a confirmation link to ${email}`
-              : 'We've sent a confirmation link to your email address'}
+              : 'We\'ve sent a confirmation link to your email address'}
           </p>
         </div>
 

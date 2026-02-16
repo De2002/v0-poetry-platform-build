@@ -31,7 +31,8 @@ export default function SignIn() {
         return
       }
 
-      router.push('/admin/dashboard')
+      // Redirect to home first, middleware will handle admin access check
+      router.push('/')
     } catch (err) {
       setError('An unexpected error occurred')
     } finally {

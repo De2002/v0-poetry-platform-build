@@ -32,6 +32,10 @@ export default function SignUp() {
       }
 
       if (data?.user) {
+        // Store email in session storage for verify page
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('signup_email', email)
+        }
         router.push('/auth/verify-email')
       }
     } catch (err) {

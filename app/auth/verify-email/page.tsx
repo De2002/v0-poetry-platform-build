@@ -1,24 +1,23 @@
+'use client'
 
-"use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export default function VerifyEmail() {
-  const [email, setEmail] = useState<string>("");
-  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState<string>('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const storedEmail = sessionStorage.getItem("signup_email");
+    const storedEmail = sessionStorage.getItem('signup_email')
     if (storedEmail) {
-      setEmail(storedEmail);
-      sessionStorage.removeItem("signup_email");
+      setEmail(storedEmail)
+      sessionStorage.removeItem('signup_email')
     }
-    setLoading(false);
-  }, []);
+    setLoading(false)
+  }, [])
 
-  if (loading) return null;
+  if (loading) return null
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -26,18 +25,19 @@ export default function VerifyEmail() {
         <div>
           <h1 className="text-3xl font-bold">Check your email</h1>
           <p className="mt-4 text-muted-foreground">
-            {email
-              ? `Confirmation link sent to ${email}`
-              : "Confirmation link sent to your email address"}
+            {email ? `Confirmation link sent to ${email}` : 'Confirmation link sent to your email'}
           </p>
         </div>
 
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Click the link in your email to verify your account.
-          </p>
+          <p className="text-sm text-muted-foreground">Click the link to verify your account.</p>
+          <p className="text-xs text-muted-foreground">Didn't receive it? Check your spam folder.</p>
           <p className="text-xs text-muted-foreground">
-            Did not receive the email? Check your spam folder.
+            For testing: proceed to{' '}
+            <Link href="/auth/signin" className="text-primary hover:underline">
+              sign in
+            </Link>
+            {' '}after confirming via email.
           </p>
         </div>
 
@@ -48,12 +48,12 @@ export default function VerifyEmail() {
         </div>
 
         <p className="text-sm text-muted-foreground">
-          Already verified?{" "}
+          Already verified?{' '}
           <Link href="/auth/signin" className="font-medium text-primary hover:underline">
             Sign in
           </Link>
         </p>
       </div>
     </div>
-  );
+  )
 }

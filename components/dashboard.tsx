@@ -30,8 +30,6 @@ const QUOTES_OF_THE_DAY = [
   },
 ]
 
-import { Shield } from 'lucide-react'
-
 export function Dashboard({ user, isAdmin = false }: { user: any; isAdmin?: boolean }) {
   const router = useRouter()
   const supabase = createClient()

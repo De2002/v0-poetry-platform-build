@@ -199,22 +199,20 @@ export function Dashboard({ user, isAdmin = false }: { user: any; isAdmin?: bool
                 </div>
               </Card>
 
-              {isAdmin && (
-                <Card className="p-6 border-primary/20 bg-primary/5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Shield className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="font-semibold">Manage Platform</p>
-                        <p className="text-sm text-muted-foreground">Admin tools and user management</p>
-                      </div>
+              <Card className="p-6 border-primary/20 bg-primary/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Shield className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="font-semibold">Manage Platform</p>
+                      <p className="text-sm text-muted-foreground">Admin tools and user management</p>
                     </div>
-                    <Button asChild variant="outline" size="sm">
-                      <Link href="/admin">Manage</Link>
-                    </Button>
                   </div>
-                </Card>
-              )}
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/admin">Manage</Link>
+                  </Button>
+                </div>
+              </Card>
             </div>
           </section>
         </div>

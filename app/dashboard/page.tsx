@@ -26,6 +26,7 @@ export default async function DashboardPage() {
   }
 
   const profile = await getUserProfile(user.id)
+  console.log("[v0] User ID:", user.id, "Profile:", profile, "isAdmin:", profile?.is_admin)
 
   return <Dashboard user={user} isAdmin={profile?.is_admin || false} />
 }

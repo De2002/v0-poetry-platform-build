@@ -1,6 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Dashboard } from '@/components/dashboard'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
@@ -11,23 +10,12 @@ async function getUser() {
   return data.user
 }
 
-async function getUserProfile(userId: string) {
-  const supabase = await createServerSupabaseClient()
-  const { data } = await supabase
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', userId)
-    .single()
-  return data
-}
-
 export default async function HomePage() {
   const user = await getUser()
 
-  // If user is authenticated, show dashboard
+  // If user is authenticated, redirect to dashboard
   if (user) {
-    const profile = await getUserProfile(user.id)
-    return <Dashboard user={user} isAdmin={profile?.is_admin || false} />
+    redirect('/dashboard')
   }
 
   // Otherwise show landing page
